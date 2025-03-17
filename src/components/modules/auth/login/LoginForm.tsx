@@ -13,37 +13,50 @@ import { Input } from "@/components/ui/input";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import Link from "next/link";
 import Logo from "@/app/assets/svgs/Logo";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { registrationSchema } from "./registerValidation";
-import { registerUser } from "@/services/AuthServices";
 import { toast } from "sonner";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema } from "./loginValidation";
+import { loginUser, recaptchaTokenVerify } from "@/services/AuthServices";
+import ReCAPTCHA from "react-google-recaptcha";
+import { useState } from "react";
 
 
-export default function RegisterForm() {
+export default function LoginForm() {
+    const [recaptchaStatus , setRecaptchaStatus] = useState(false);
     const form = useForm({
-        resolver: zodResolver(registrationSchema)
+        resolver: zodResolver(loginSchema)
     });
 
     const {
         formState: { isSubmitting },
     } = form;
 
-    const password = form.watch("password");
-    const passwordConfirm = form.watch("passwordConfirm");
-    //   console.log(password, passwordConfirm);
 
+
+    const handleRecaptcha = async (value : string | null)=> {
+        try {
+            const res = await recaptchaTokenVerify(value as string);
+            if (res?.success) {
+                setRecaptchaStatus(true)
+            }
+        } catch (error : any) {
+            console.error(error);
+        }
+    }
+     
     const onSubmit: SubmitHandler<FieldValues> = async (data) => {
         try {
-            const res = await registerUser(data);
-            if(res?.success){
+            const res = await loginUser(data);
+            console.log(res);
+            if (res?.success) {
                 toast.success(res?.message)
             }
-            else{
+            else {
                 toast.error(res?.message)
             }
         } catch (error: any) {
-            console.log(error); 
-            
+            console.log(error);
+
         }
     };
 
@@ -52,7 +65,7 @@ export default function RegisterForm() {
             <div className="flex items-center space-x-4 ">
                 <Logo />
                 <div>
-                    <h1 className="text-xl font-semibold">Register</h1>
+                    <h1 className="text-xl font-semibold">Login</h1>
                     <p className="font-extralight text-sm text-gray-600">
                         Join us today and start your journey!
                     </p>
@@ -60,19 +73,7 @@ export default function RegisterForm() {
             </div>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-4 mt-5">
-                    <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Name</FormLabel>
-                                <FormControl>
-                                    <Input {...field} value={field.value || ""} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+
                     <FormField
 
                         control={form.control}
@@ -100,38 +101,22 @@ export default function RegisterForm() {
                             </FormItem>
                         )}
                     />
-                    <FormField
-                        control={form.control}
-                        name="passwordConfirm"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Confirm Password</FormLabel>
-                                <FormControl>
-                                    <Input type="password" {...field} value={field.value || ""} />
-                                </FormControl>
 
-                                {passwordConfirm && password !== passwordConfirm ? (
-                                    <FormMessage> Password does not match </FormMessage>
-                                ) : (
-                                    <FormMessage />
-                                )}
-                            </FormItem>
-                        )}
-                    />
+                    <ReCAPTCHA sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_CLIENT_KEY as string} onChange={handleRecaptcha}></ReCAPTCHA>
 
                     <Button
-                        disabled={passwordConfirm && password !== passwordConfirm}
+                        disabled={!recaptchaStatus}
                         type="submit"
                         className="mt-5 w-full"
                     >
-                        {isSubmitting ? "Registering...." : "Register"}
+                        {isSubmitting ? "Loging in...." : "Login"}
                     </Button>
                 </form>
             </Form>
             <p className="text-sm text-gray-600 text-center my-3">
-                Already have an account ?
-                <Link href="/login" className="text-primary">
-                    Login
+                Do Not Have Any Account ?
+                <Link href="/register" className="text-primary">
+                    Register
                 </Link>
             </p>
         </div>
