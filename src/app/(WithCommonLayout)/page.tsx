@@ -6,7 +6,7 @@ const HomePage = () => {
   const user = useUser()
   console.log(user)
   return (
-    <div>
+    <div className='container mx-auto'>
      <h1>Wellcome To Next Mart Home Page</h1>
     </div>
   )
