@@ -14,11 +14,16 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { logout } from "@/services/AuthServices";
 import { useUser } from "@/providers/Providers";
+import { useEffect, useState } from "react";
 
 
 export default function Navbar() {
 
+
   const { user, setIsLoading } = useUser();
+
+
+  console.log("user", user)
 
   const handleLogout = () => {
     logout();
@@ -49,8 +54,7 @@ export default function Navbar() {
 
           {
             user ? <>
-
-              <Link href="/create-shop">  <Button variant="outline" className="rounded-full">
+              <Link href="/create-shop">  <Button className="rounded-full">
                 Create Shop
               </Button>
               </Link>
