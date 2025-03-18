@@ -19,10 +19,16 @@ import { loginSchema } from "./loginValidation";
 import { loginUser, recaptchaTokenVerify } from "@/services/AuthServices";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useUser } from "@/providers/Providers";
 
 
 export default function LoginForm() {
-    const [recaptchaStatus , setRecaptchaStatus] = useState(false);
+    const [recaptchaStatus, setRecaptchaStatus] = useState(false);
+    const {setIsLoading}= useUser();
+    const searchParams = useSearchParams();
+    const redirect = searchParams.get("redirectPath");
+    const router = useRouter();
     const form = useForm({
         resolver: zodResolver(loginSchema)
     });
@@ -33,24 +39,32 @@ export default function LoginForm() {
 
 
 
-    const handleRecaptcha = async (value : string | null)=> {
+    const handleRecaptcha = async (value: string | null) => {
         try {
             const res = await recaptchaTokenVerify(value as string);
             if (res?.success) {
                 setRecaptchaStatus(true)
             }
-        } catch (error : any) {
+        } catch (error: any) {
             console.error(error);
         }
     }
-     
+
     const onSubmit: SubmitHandler<FieldValues> = async (data) => {
         try {
             const res = await loginUser(data);
             console.log(res);
             if (res?.success) {
-                toast.success(res?.message)
+                toast.success(res?.message);
+                if (redirect) {
+                    router.push(redirect)
+                    setIsLoading(true);
+                    // window.location.reload();
+                } else {
+                    router.push("/profile")
+                }
             }
+
             else {
                 toast.error(res?.message)
             }
