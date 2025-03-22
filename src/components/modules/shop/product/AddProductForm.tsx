@@ -27,19 +27,21 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { ICategory } from "@/types";
+import { IBrand, ICategory } from "@/types";
 import { getAllCategories } from "@/services/Category";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Logo from "@/app/assets/svgs/Logo";
 import NMImageUploader from "@/components/ui/core/NMImageUploader";
 import ImagePreviewer from "@/components/ui/core/NMImageUploader/ImagePreviewer";
+import { promise } from "zod";
+import { getAllBrands } from "@/services/Brand";
 
 export default function AddProductsForm() {
     const [imageFiles, setImageFiles] = useState<File[] | []>([]);
     const [imagePreview, setImagePreview] = useState<string[] | []>([]);
     const [categories, setCategories] = useState<ICategory[] | []>([]);
-    //   const [brands, setBrands] = useState<IBrand[] | []>([]);
+    const [brands, setBrands] = useState<IBrand[] | []>([]);
 
     const router = useRouter();
 
@@ -77,15 +79,61 @@ export default function AddProductsForm() {
         name: "keyFeatures"
     })
 
-    console.log(featureFields)
+    // console.log(featureFields)
 
     const addFeature = () => {
         appendFeatures({ value: "" })
     }
 
+    const { append: appendSpec, fields: specFields } = useFieldArray({
+        control: form.control,
+        name: "specification"
+    })
+
+    //  console.log(specFields)
+    const addSpec = () => {
+        appendSpec({ key: "", value: "" })
+    }
+
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const [categoriesData, brandsData] = await Promise.all([
+                getAllCategories(),
+                getAllBrands()
+            ])
+
+            setCategories(categoriesData?.data),
+                setBrands(brandsData?.data)
+        }
+        fetchData()
+    }, [])
+
 
     const onSubmit: SubmitHandler<FieldValues> = async (data) => {
-        console.log(data)
+
+        const availableColors = data?.availableColors.map((color: { value: string }) => color.value)
+        const keyFeatures = data?.keyFeatures.map((feature: { value: string }) => feature.value)
+
+        const specification: { [key: string]: string } = {}
+        data?.specification.forEach((item: { key: string, value: string }) => specification[item.key] = item.value)
+
+
+        // console.log({ availableColors, keyFeatures, specification })
+       
+        const modifiedData = {
+            ...data,
+            availableColors,
+            keyFeatures,
+            specification,
+            // price :parFloat(data?.price)
+        }
+
+        try {
+            console.log(data)
+        } catch (error) {
+            console.error(error)
+        }
     };
 
     return (
@@ -135,24 +183,23 @@ export default function AddProductsForm() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Category</FormLabel>
-                                    <Select
-                                        onValueChange={field.onChange}
-                                        defaultValue={field.value}
-                                    >
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <FormControl>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Select Product Category" />
+                                                <SelectValue placeholder="Select a Product category" />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {categories.map((category) => (
-                                                <SelectItem key={category?._id} value={category?._id}>
+
+                                            {
+                                                categories?.map(category => <SelectItem key={category?._id} value={category?._id}>
                                                     {category?.name}
-                                                </SelectItem>
-                                            ))}
+                                                </SelectItem>)
+                                            }
+
+
                                         </SelectContent>
                                     </Select>
-
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -163,24 +210,23 @@ export default function AddProductsForm() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Brand</FormLabel>
-                                    <Select
-                                        onValueChange={field.onChange}
-                                        defaultValue={field.value}
-                                    >
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <FormControl>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Select Product Brand" />
+                                                <SelectValue placeholder="Select a Product Brand" />
                                             </SelectTrigger>
                                         </FormControl>
-                                        {/* <SelectContent>
-                      {brands.map((brand) => (
-                        <SelectItem key={brand?._id} value={brand?._id}>
-                          {brand?.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent> */}
-                                    </Select>
+                                        <SelectContent>
 
+                                            {
+                                                brands?.map(brand => <SelectItem key={brand?._id} value={brand?._id}>
+                                                    {brand?.name}
+                                                </SelectItem>)
+                                            }
+
+
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -302,20 +348,26 @@ export default function AddProductsForm() {
                         </div>
 
                         <div className="my-5">
-                            <FormField
+                            {
+                                featureFields.map((featureField, index) => (
+                                    <div key={featureField.id}>
+                                        <FormField
 
-                                control={form.control}
-                                name="name"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Brand Name</FormLabel>
-                                        <FormControl>
-                                            <Input type="text" {...field} value={field.value || ""} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                            control={form.control}
+                                            name={`keyFeatures.${index}.value`}
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Key Features {index + 1}</FormLabel>
+                                                    <FormControl>
+                                                        <Input type="text" {...field} value={field.value || ""} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                ))
+                            }
 
                         </div>
                     </div>
@@ -324,7 +376,7 @@ export default function AddProductsForm() {
                         <div className="flex justify-between items-center border-t border-b py-3 my-5">
                             <p className="text-primary font-bold text-xl">Specification</p>
                             <Button
-                                // onClick={addSpec}
+                                onClick={addSpec}
                                 variant="outline"
                                 className="size-10"
                                 type="button"
@@ -333,39 +385,38 @@ export default function AddProductsForm() {
                             </Button>
                         </div>
 
-                        {/* {specFields.map((specField, index) => (
-                            <div
-                                key={specField.id}
-                                className="grid grid-cols-1 gap-4 md:grid-cols-2 my-5"
-                            >
+                        {
+                            specFields.map((specField, index) => <div key={specField.id} className="grid grid-cols-1 gap-4 md:grid-cols-2 my-5">
                                 <FormField
+
                                     control={form.control}
                                     name={`specification.${index}.key`}
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Feature name {index + 1}</FormLabel>
+                                            <FormLabel>Feature Name {index + 1}</FormLabel>
                                             <FormControl>
-                                                <Input {...field} value={field.value || ""} />
+                                                <Input type="text" {...field} value={field.value || ""} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                                 <FormField
+
                                     control={form.control}
                                     name={`specification.${index}.value`}
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Feature Description {index + 1}</FormLabel>
+                                            <FormLabel>Feature Discription {index + 1}</FormLabel>
                                             <FormControl>
-                                                <Input {...field} value={field.value || ""} />
+                                                <Input type="text" {...field} value={field.value || ""} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-                            </div>
-                        ))} */}
+                            </div>)
+                        }
                     </div>
 
                     <Button type="submit" className="mt-5 w-full" disabled={isSubmitting}>

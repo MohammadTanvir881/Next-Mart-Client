@@ -33,7 +33,10 @@ const CreateBrandModal = () => {
         try {
             const formData = new FormData();
             formData.append("data", JSON.stringify(data))
-            formData.append("icon", imageFiles[0] as File)
+            formData.append("logo", imageFiles[0] as File)
+
+
+            console.log(formData)
 
             const res = await createBrand(formData);
             console.log(res)
