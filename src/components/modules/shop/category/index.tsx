@@ -1,12 +1,14 @@
 "use client"
-import React from 'react'
+import React, { useState } from 'react'
 import CreateCategoryModal from './CreateCategoryModal'
-import { getAllCategories } from '@/services/Category'
+import { deleteCategory, getAllCategories } from '@/services/Category'
 import { ICategory } from '@/types'
 import { ColumnDef } from '@tanstack/react-table'
 import { NMTable } from '@/components/ui/core/NMTable'
 import Image from 'next/image'
 import { Trash } from 'lucide-react'
+import DeleteConfirmationModal from '@/components/ui/core/NMModal/DeleteConfirmationModal'
+import { toast } from 'sonner'
 
 type ICategoryProps = {
     category: ICategory[]
@@ -14,9 +16,35 @@ type ICategoryProps = {
 
 const ManageCategories = ({ category }: ICategoryProps) => {
 
+    const [isModalOpen, setModalOpen] = useState(false);
+    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [selectedItem, setSeletedItem] = useState<string | null>(null);
+
     const handleDelete = (data: ICategory) => {
         console.log(data);
+        setSelectedId(data?._id);
+        setSeletedItem(data?.name);
+        setModalOpen(true);
+
     };
+
+
+    const handleDeleteConfirm = async () => {
+        try {
+            if (selectedId) {
+                const res = await deleteCategory(selectedId);
+                console.log(res)
+                if (res.success) {
+                    toast.success(res.message)
+                }
+                else {
+                    toast.error(res.message)
+                }
+            }
+        } catch (error: any) {
+
+        }
+    }
 
     const columns: ColumnDef<ICategory>[] = [
         {
@@ -76,6 +104,12 @@ const ManageCategories = ({ category }: ICategoryProps) => {
                 <CreateCategoryModal></CreateCategoryModal>
             </div>
             <NMTable data={category} columns={columns} />
+            <DeleteConfirmationModal
+                name={selectedItem}
+                isOpen={isModalOpen}
+                onOpenChange={setModalOpen}
+                onConfirm={handleDeleteConfirm}
+            ></DeleteConfirmationModal>
         </div>
     )
 }
