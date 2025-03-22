@@ -18,7 +18,7 @@ import {
 } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Weight } from "lucide-react";
 
 import {
     Select,
@@ -36,6 +36,7 @@ import NMImageUploader from "@/components/ui/core/NMImageUploader";
 import ImagePreviewer from "@/components/ui/core/NMImageUploader/ImagePreviewer";
 import { promise } from "zod";
 import { getAllBrands } from "@/services/Brand";
+import { addProduct } from "@/services/Product";
 
 export default function AddProductsForm() {
     const [imageFiles, setImageFiles] = useState<File[] | []>([]);
@@ -120,17 +121,36 @@ export default function AddProductsForm() {
 
 
         // console.log({ availableColors, keyFeatures, specification })
-       
+
         const modifiedData = {
             ...data,
             availableColors,
             keyFeatures,
             specification,
-            // price :parFloat(data?.price)
+            price: parseFloat(data?.price),
+            stock: parseInt(data?.stock),
+            weight: parseFloat(data?.weight)
+
         }
 
+        const formData = new FormData();
+        formData.append("data", JSON.stringify(modifiedData));
+
+        for (const file of imageFiles) {
+            formData.append("images", file)
+        }
+
+
         try {
-            console.log(data)
+            const res = await addProduct(formData);
+            console.log(res)
+            if (res?.success) {
+                toast.success(res?.message)
+                router.push("/user/shop/products")
+
+            } else {
+                toast.error(res.message)
+            }
         } catch (error) {
             console.error(error)
         }
@@ -170,7 +190,7 @@ export default function AddProductsForm() {
                                 <FormItem>
                                     <FormLabel>Price</FormLabel>
                                     <FormControl>
-                                        <Input {...field} value={field.value || ""} />
+                                        <Input type="number" {...field} value={field.value || ""} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -238,7 +258,7 @@ export default function AddProductsForm() {
                                 <FormItem>
                                     <FormLabel>Stock</FormLabel>
                                     <FormControl>
-                                        <Input {...field} value={field.value || ""} />
+                                        <Input type="number" {...field} value={field.value || ""} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -251,7 +271,7 @@ export default function AddProductsForm() {
                                 <FormItem>
                                     <FormLabel>Weight</FormLabel>
                                     <FormControl>
-                                        <Input {...field} value={field.value || ""} />
+                                        <Input type="number" {...field} value={field.value || ""} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
