@@ -31,7 +31,7 @@ import { IBrand, ICategory } from "@/types";
 import { getAllCategories } from "@/services/Category";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import Logo from "@/app/assets/svgs/Logo";
+import Logo from "@/assets/svgs/Logo";
 import NMImageUploader from "@/components/ui/core/NMImageUploader";
 import ImagePreviewer from "@/components/ui/core/NMImageUploader/ImagePreviewer";
 import { promise } from "zod";
