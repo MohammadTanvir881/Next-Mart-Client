@@ -2,11 +2,13 @@ import AllProducts from "@/components/modules/products";
 import ProductBanner from "@/components/modules/products/banner";
 import CategoryCard from "@/components/ui/core/CategoryCard";
 import { getAllCategories } from "@/services/Category";
+import { getAllProducts } from "@/services/Product";
 import { ICategory } from "@/types";
 import React from "react";
 
 const AllProductPage = async () => {
   const { data: categories } = await getAllCategories();
+  const {data : products} =await getAllProducts();
   return (
     <div>
       <ProductBanner title="All Product" path="Home - Products"></ProductBanner>
@@ -16,7 +18,7 @@ const AllProductPage = async () => {
           <CategoryCard key={index} category={category}></CategoryCard>
         ))}
       </div>
-      <AllProducts></AllProducts>
+      <AllProducts products={products}></AllProducts>
     </div>
   );
 };

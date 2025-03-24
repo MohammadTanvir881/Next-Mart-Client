@@ -9,15 +9,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { IProduct } from "@/types/product";
-
 import { Heart, ShoppingCart, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 const ProductCard = ({ product }: { product: IProduct }) => {
   return (
-    <Card className="p-3">
-      <CardHeader className="relative p-0 h-48">
+    <Card className="p-2">
+      <CardHeader className="relative h-40 p-0">
         <Image
           src={
             product?.imageUrls[0] ||
@@ -26,20 +25,20 @@ const ProductCard = ({ product }: { product: IProduct }) => {
           width={500}
           height={500}
           alt="product image"
-          className="rounded-sm h-48 object-cover"
+          className="rounded-sm h-40 object-cover w-full"
         />
         {product?.stock === 0 && (
-          <div className="absolute left-2 top-0 bg-red-500 text-white px-2 rounded-full">
+          <div className="absolute left-2 top-1 bg-red-500 text-white px-2 py-1 text-xs rounded-full">
             Out of Stock
           </div>
         )}
       </CardHeader>
 
-      <CardContent className=" p-0 mt-2">
+      <CardContent className="p-2">
         <Link href={`/products/${product?._id}`} passHref>
           <CardTitle
             title={product?.name}
-            className="font-semibold cursor-pointer text-sm"
+            className="font-semibold text-sm leading-tight cursor-pointer"
           >
             {product?.name.length > 30
               ? product?.name?.slice(0, 30) + "..."
@@ -47,22 +46,22 @@ const ProductCard = ({ product }: { product: IProduct }) => {
           </CardTitle>
         </Link>
 
-        <div className="flex items-center justify-between my-2">
+        <div className="flex items-center justify-between mt-1">
           <p className="text-sm text-gray-600">
             {product?.offerPrice ? (
               <>
-                <span className="font-semibold mr-2 text-orange-400">
+                <span className="font-semibold text-orange-400">
                   $ {product?.offerPrice.toFixed(2)}
                 </span>
-                <del className="font-semibold text-xs">$ {product?.price.toFixed(2)}</del>
+                <del className="text-xs ml-2">$ {product?.price.toFixed(2)}</del>
               </>
             ) : (
               <span className="font-semibold">$ {product?.price.toFixed(2)}</span>
             )}
           </p>
 
-          <div className="flex items-center justify-center gap-1">
-            <Star className="w-4 h-4" fill="orange" stroke="orange" />
+          <div className="flex items-center gap-1">
+            <Star className="w-4 h-4 text-yellow-400" fill="orange" stroke="orange" />
             <span className="text-sm font-medium text-gray-700">
               {product?.averageRating}
             </span>
@@ -70,13 +69,13 @@ const ProductCard = ({ product }: { product: IProduct }) => {
         </div>
       </CardContent>
 
-      <CardFooter className="block p-0">
-        <div className="flex gap-2 items-center justify-between">
+      <CardFooter className="p-2">
+        <div className="flex gap-2 items-center justify-between w-full">
           <Button
             disabled={product?.stock === 0}
             size="sm"
             variant="outline"
-            className="w-32"
+            className="flex-1"
           >
             Buy Now
           </Button>
