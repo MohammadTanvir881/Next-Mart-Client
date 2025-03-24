@@ -8,12 +8,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { addProduct } from "@/redux/features/cartSlice";
+import { useAppDispatch } from "@/redux/hooks";
 import { IProduct } from "@/types/product";
 import { Heart, ShoppingCart, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 const ProductCard = ({ product }: { product: IProduct }) => {
+  const dispatch = useAppDispatch();
+
+  const handleAddProduct = (product: IProduct) => {
+    dispatch(addProduct(product));
+  };
   return (
     <Card className="p-2">
       <CardHeader className="relative h-40 p-0">
@@ -53,15 +60,23 @@ const ProductCard = ({ product }: { product: IProduct }) => {
                 <span className="font-semibold text-orange-400">
                   $ {product?.offerPrice.toFixed(2)}
                 </span>
-                <del className="text-xs ml-2">$ {product?.price.toFixed(2)}</del>
+                <del className="text-xs ml-2">
+                  $ {product?.price.toFixed(2)}
+                </del>
               </>
             ) : (
-              <span className="font-semibold">$ {product?.price.toFixed(2)}</span>
+              <span className="font-semibold">
+                $ {product?.price.toFixed(2)}
+              </span>
             )}
           </p>
 
           <div className="flex items-center gap-1">
-            <Star className="w-4 h-4 text-yellow-400" fill="orange" stroke="orange" />
+            <Star
+              className="w-4 h-4 text-yellow-400"
+              fill="orange"
+              stroke="orange"
+            />
             <span className="text-sm font-medium text-gray-700">
               {product?.averageRating}
             </span>
@@ -80,6 +95,7 @@ const ProductCard = ({ product }: { product: IProduct }) => {
             Buy Now
           </Button>
           <Button
+            onClick={() => handleAddProduct(product)}
             disabled={product?.stock === 0}
             variant="outline"
             size="sm"
